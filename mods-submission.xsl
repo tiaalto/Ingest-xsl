@@ -107,7 +107,11 @@ This should either be further developed to be language-sensitive or just change 
                 <xsl:element name="dim:field">
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
                         <xsl:attribute name="element">title</xsl:attribute>
-                        <xsl:attribute name="lang">en</xsl:attribute>
+                        <xsl:attribute name="lang">
+                                <xsl:call-template name="langCode">
+                                        <xsl:with-param name="la" select="../attribute::lang"></xsl:with-param>
+                                </xsl:call-template>
+                        </xsl:attribute>
                         <xsl:value-of select="normalize-space(.)"/>
                 </xsl:element>
         </xsl:template>
@@ -124,7 +128,11 @@ This should either be further developed to be language-sensitive or just change 
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
                         <xsl:attribute name="element">title</xsl:attribute>
                         <xsl:attribute name="qualifier">alternative</xsl:attribute>
-                        <xsl:attribute name="lang">en</xsl:attribute>
+                        <xsl:attribute name="lang">
+                                <xsl:call-template name="langCode">
+                                <xsl:with-param name="la" select="../attribute::lang"></xsl:with-param>
+                                </xsl:call-template>
+                        </xsl:attribute>
                         <xsl:value-of select="normalize-space(.)"/>
                 </xsl:element>
         </xsl:template>
@@ -251,7 +259,11 @@ This should either be further developed to be language-sensitive or just change 
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
                         <xsl:attribute name="element">description</xsl:attribute>                      
                         <xsl:attribute name="qualifier">abstract</xsl:attribute>
-                        <xsl:attribute name="lang">en</xsl:attribute>
+                        <xsl:attribute name="lang">
+                                <xsl:call-template name="langCode">
+                                        <xsl:with-param name="la" select="attribute::lang"></xsl:with-param>
+                                </xsl:call-template>
+                        </xsl:attribute>
                         <xsl:value-of select="normalize-space(.)"/>
                 </xsl:element>
         </xsl:template>
@@ -365,6 +377,17 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                         <xsl:value-of select="normalize-space(.)"/>
                 </xsl:element>
         </xsl:template>
+        <!-- External links / tiaalto 170510 -->
+        <xsl:template match="*[local-name()='url']">
+                <xsl:element name="dim:field">
+                        <xsl:attribute name="mdschema">dc</xsl:attribute>
+                        <xsl:attribute name="element">identifier</xsl:attribute>
+                        <xsl:attribute name="qualifier">uri</xsl:attribute>
+                        <xsl:value-of select="normalize-space(.)"/>
+                </xsl:element>
+                
+                
+        </xsl:template>
         
 
 <!-- **** MODS   identifier/@type  ====> DC identifier.other  **** -->
@@ -407,6 +430,64 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                         <xsl:value-of select="normalize-space(.)"/>
                 </xsl:element>
         </xsl:template>
+        
+        <!--Finnish KOTA Publication classification to purl.org/eprint/type/nn.
+                UH/Finland specific, comment out or change accordingly.
+                tiaalto 170510-->
+        <xsl:template match="*[local-name()='genre'][@type='publicationType']">
+                <xsl:element name="dim:field">
+                <xsl:attribute name="mdschema">dc</xsl:attribute>
+                <xsl:attribute name="element">type</xsl:attribute>
+                <xsl:call-template name="KOTATypes">
+                        <!-- use only the 2 char code, ie. "A2" -->
+                        <xsl:with-param name="kota" select="substring(.,1,2)"/>
+                </xsl:call-template>
+                </xsl:element>
+        </xsl:template>
+        <xsl:template name="KOTATypes">
+                <xsl:param name="kota"></xsl:param>
+                <xsl:choose>
+                        <xsl:when test="$kota='A1'">http://purl.org/eprint/type/JournalArticle</xsl:when>
+                        <xsl:when test="$kota='A2'">http://purl.org/eprint/type/JournalArticle</xsl:when>
+                        <xsl:when test="$kota='A3'">http://purl.org/eprint/type/BookItem</xsl:when>
+                        <xsl:when test="$kota='A4'">http://purl.org/eprint/type/ConferencePaper</xsl:when>
+                        <xsl:when test="$kota='B1'">http://purl.org/eprint/type/JournalArticle</xsl:when>
+                        <xsl:when test="$kota='B2'">http://purl.org/eprint/type/BookItem</xsl:when>
+                        <xsl:when test="$kota='B3'">http://purl.org/eprint/type/ConferencePaper</xsl:when>
+                        <xsl:when test="$kota='C1'">http://purl.org/eprint/type/Book</xsl:when>
+                        <xsl:when test="$kota='C2'">http://purl.org/eprint/type/Book</xsl:when>
+                        <xsl:when test="$kota='D1'">http://purl.org/eprint/type/JournalArticle</xsl:when>
+                        <xsl:when test="$kota='D2'">http://purl.org/eprint/type/BookItem</xsl:when>
+                        <xsl:when test="$kota='D3'">http://purl.org/eprint/type/ConferencePaper</xsl:when>
+                        <xsl:when test="$kota='D4'">http://purl.org/eprint/type/Report</xsl:when>
+                        <xsl:when test="$kota='D5'">http://purl.org/eprint/type/Book</xsl:when>
+                        <xsl:when test="$kota='E1'">http://purl.org/eprint/type/NewsItem</xsl:when>
+                        <xsl:when test="$kota='E2'">http://purl.org/eprint/type/Book</xsl:when>
+                        <xsl:when test="$kota='G1'">http://purl.org/eprint/type/Thesis</xsl:when>
+                        <xsl:when test="$kota='G2'">http://purl.org/eprint/type/Thesis</xsl:when>
+                        <xsl:when test="$kota='G3'">http://purl.org/eprint/type/Thesis</xsl:when>
+                        <xsl:when test="$kota='G4'">http://purl.org/eprint/type/Thesis</xsl:when>
+                        <xsl:when test="$kota='G5'">http://purl.org/eprint/type/Thesis</xsl:when>
+                        <xsl:when test="$kota='H1'">http://purl.org/eprint/type/Patent</xsl:when>
+                        <xsl:when test="$kota='I1'">http://purl.org/dc/dcmitype/MovingImage</xsl:when>
+                        <xsl:when test="$kota='I2'">http://purl.org/dc/dcmitype/Software</xsl:when>
+                        <xsl:otherwise>http://purl.org/eprint/type/ScholarlyText</xsl:otherwise>
+                </xsl:choose>
+                
+        </xsl:template>
+        <!-- get the iso-639-2b into the shorter form, here for English, Finnish & Swedish -->
+        <xsl:template name="langCode">
+                <xsl:param name="la"></xsl:param>
+                <xsl:choose>
+                        <xsl:when test="$la='eng'">en</xsl:when>
+                        <xsl:when test="$la='fin'">fi</xsl:when>
+                        <xsl:when test="$la='swe'">sv</xsl:when>
+                        <xsl:otherwise>en</xsl:otherwise>
+                </xsl:choose>
+                
+        </xsl:template>
+        
+        
         <!--tiaalto 12.05.10: This template is for massaging the embargo date into a form understandable by DSpace.
         source: http://geekswithblogs.net/workdog/archive/2007/02/08/105858.aspx-->
 
