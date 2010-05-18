@@ -122,12 +122,12 @@ This should either be further developed to be language-sensitive or just change 
                 http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                 -->
         <!-- (Not anticipated from CSAIL.) -->
-
+        <!-- A subtitle is merely a repeat of dc.title since there does not seem to be a better
+        way to describe it / tiaalto 180510 -->
         <xsl:template match="*[local-name()='titleInfo']/*[local-name()='subTitle']">
                 <xsl:element name="dim:field">
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
                         <xsl:attribute name="element">title</xsl:attribute>
-                        <xsl:attribute name="qualifier">alternative</xsl:attribute>
                         <xsl:attribute name="lang">
                                 <xsl:call-template name="langCode">
                                 <xsl:with-param name="la" select="../attribute::lang"></xsl:with-param>
@@ -177,8 +177,8 @@ This should either be further developed to be language-sensitive or just change 
                         <xsl:text>, </xsl:text><xsl:value-of select="substring-before(*[local-name()='namePart'], ' ')"/>
                 </xsl:element>
                 <!--         **** MODS affiliation ====> DC  creator.corporateName (UH specific, adjust accordingly) tiaalto 120210**** -->
-                <!--if there is an affiliation for a person-->
-                <xsl:if test="*[local-name()='affiliation']">
+                <!--if there is an affiliation for a person and he/she is UH-->
+                <xsl:if test="*[local-name()='affiliation'][../@authority='local']">
                 <xsl:element name="dim:field">
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
                         <xsl:attribute name="element">creator</xsl:attribute>
@@ -367,7 +367,7 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                 </xsl:element>
         </xsl:template>
         
-
+<!-- Copyright statement- mods:accessCondition => dc.rights / tiaalto 180510 -->
 
         <xsl:template match="mods:accessCondition">
                 <xsl:element name="dim:field">
@@ -377,11 +377,11 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                         <xsl:value-of select="normalize-space(.)"/>
                 </xsl:element>
         </xsl:template>
-        <!-- External links / tiaalto 170510 -->
+        <!-- External links  to dc.relation.uri / tiaalto 170510 -->
         <xsl:template match="*[local-name()='url']">
                 <xsl:element name="dim:field">
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
-                        <xsl:attribute name="element">identifier</xsl:attribute>
+                        <xsl:attribute name="element">relation</xsl:attribute>
                         <xsl:attribute name="qualifier">uri</xsl:attribute>
                         <xsl:value-of select="normalize-space(.)"/>
                 </xsl:element>
