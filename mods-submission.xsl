@@ -3,6 +3,7 @@
         xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:dim="http://www.dspace.org/xmlns/dspace/dim"
                 xmlns:mods="http://www.loc.gov/mods/v3"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 version="1.0">
 
 
@@ -100,8 +101,6 @@
                         <xsl:apply-templates/>
                 </xsl:element>
         </xsl:template>
-<!--NOTE: at its current form, this XSL assumes that all output has an attribute "lang=en". 
-This should either be further developed to be language-sensitive or just change the lang code accordingly / tiaalto 12.5.2010-->
 <!-- **** MODS   titleInfo/title ====> DC title **** -->
         <xsl:template match="*[local-name()='titleInfo']/*[local-name()='title']">
                 <xsl:element name="dim:field">
@@ -123,7 +122,7 @@ This should either be further developed to be language-sensitive or just change 
                 -->
         <!-- (Not anticipated from CSAIL.) -->
         <!-- A subtitle is merely a repeat of dc.title since there does not seem to be a better
-        way to describe it / tiaalto 180510 -->
+        way to describe it in Dublin Core / tiaalto 180510 -->
         <xsl:template match="*[local-name()='titleInfo']/*[local-name()='subTitle']">
                 <xsl:element name="dim:field">
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
@@ -167,24 +166,21 @@ This should either be further developed to be language-sensitive or just change 
                                 a more controlled vocabulary via xsl:choose etc.)
                                 -->
                         <xsl:attribute name="qualifier"><xsl:value-of select="*[local-name()='role']/*[local-name()='roleTerm']"/></xsl:attribute>
-<!-- This would be the right way to parse author names, 
-        now commented out since it does not match the current source encoding / tiaalto 12.5.2010
 
                         <xsl:value-of select="*[local-name()='namePart'][@type='family']"/><xsl:text>, </xsl:text><xsl:value-of select="*[local-name()='namePart'][@type='given']"/>
--->
-                       <!-- This is a temporary solution, works only with the simplest surname, firstname case, (IOW, not well at all)-->
-                        <xsl:value-of select="substring-after(*[local-name()='namePart'], ' ')"/>
-                        <xsl:text>, </xsl:text><xsl:value-of select="substring-before(*[local-name()='namePart'], ' ')"/>
+
+                       <!-- This was a temporary solution, works only with the simplest surname, firstname case, (IOW, not well at all)-->
+                        <!--<xsl:value-of select="substring-after(*[local-name()='namePart'], ' ')"/>
+                        <xsl:text>, </xsl:text><xsl:value-of select="substring-before(*[local-name()='namePart'], ' ')"/>-->
                 </xsl:element>
-                <!--         **** MODS affiliation ====> DC  creator.corporateName (UH specific, adjust accordingly) tiaalto 120210**** -->
+                <!--         **** MODS affiliation ====> DC  contributor (no qualifier), with addition of "Helsingin yliopisto" (UH specific, adjust accordingly) tiaalto 120210**** -->
                 <!--if there is an affiliation for a person and he/she is UH-->
                 <xsl:if test="*[local-name()='affiliation'][../@authority='local']">
                 <xsl:element name="dim:field">
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
-                        <xsl:attribute name="element">creator</xsl:attribute>
-                        <xsl:attribute name="qualifier">corporateName</xsl:attribute>
-                        <xsl:attribute name="lang">en</xsl:attribute>
-                        <xsl:value-of select="*[local-name()='affiliation']"/>               
+                        <xsl:attribute name="element">contributor</xsl:attribute>           
+                        <xsl:attribute name="lang">fi</xsl:attribute>
+                        <xsl:text>Helsingin yliopisto, </xsl:text><xsl:value-of select="*[local-name()='affiliation']"/>               
                 </xsl:element>
                 </xsl:if>
                 
@@ -196,10 +192,9 @@ This should either be further developed to be language-sensitive or just change 
                                 <!--this DIM mapping is just for testing and must be changed-->
                                 <xsl:attribute name="mdschema">dc</xsl:attribute>
                                 <xsl:attribute name="element">contributor</xsl:attribute>
-                                <xsl:attribute name="qualifier">other</xsl:attribute>
-                                <!-- This is a temporary solution, works only with the simplest surname, firstname case, (IOW, not well at all, see above)-->
-                                <xsl:value-of select="substring-after(*[local-name()='namePart'], ' ')"/>
-                                <xsl:text>, </xsl:text><xsl:value-of select="substring-before(*[local-name()='namePart'], ' ')"/>
+                                <xsl:attribute name="qualifier">uhperson</xsl:attribute>
+                                <xsl:value-of select="*[local-name()='namePart'][@type='family']"/><xsl:text>, </xsl:text><xsl:value-of select="*[local-name()='namePart'][@type='given']"/>
+                                
                         </xsl:element>              
                       
                 </xsl:if>
@@ -270,7 +265,7 @@ This should either be further developed to be language-sensitive or just change 
 
 
 <!-- **** MODS   subject/topic ====> DC  subject **** -->
-        <xsl:template match="*[local-name()='subject']/*[local-name()='topic']">
+        <xsl:template match="*[local-name()='subject']/*[local-name()='topic'][not(@xsi:nil)]">
                 <xsl:element name="dim:field">
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
                         <xsl:attribute name="element">subject</xsl:attribute>                   
@@ -347,8 +342,12 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                                                 http://www.loc.gov/standards/mods/mods-outline.html#relatedItem
                                                         -->
                                         </xsl:choose>
-                                        <xsl:attribute name="lang">en</xsl:attribute>
+                                        
                                         <xsl:value-of select="normalize-space(*[local-name()='titleInfo']/*[local-name()='title'])"/>
+                                        <xsl:if test="*[local-name()='titleInfo']/*[local-name()='subTitle']">
+                                                <xsl:text> </xsl:text>
+                                                <xsl:value-of select="normalize-space(*[local-name()='titleInfo']/*[local-name()='subTitle'])"/>
+                                        </xsl:if>
                                 </xsl:element>
                         </xsl:otherwise>
                 </xsl:choose>
@@ -438,12 +437,54 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                 <xsl:element name="dim:field">
                 <xsl:attribute name="mdschema">dc</xsl:attribute>
                 <xsl:attribute name="element">type</xsl:attribute>
+                 <xsl:attribute name="qualifier">uri</xsl:attribute>
                 <xsl:call-template name="KOTATypes">
                         <!-- use only the 2 char code, ie. "A2" -->
                         <xsl:with-param name="kota" select="substring(.,1,2)"/>
                 </xsl:call-template>
                 </xsl:element>
+                
+                <!-- include also the plain KOTA classification into dc.type -->
+                
+                <xsl:element name="dim:field">
+                        <xsl:attribute name="mdschema">dc</xsl:attribute>
+                        <xsl:attribute name="element">type</xsl:attribute>
+                        <xsl:value-of select="normalize-space(.)"/>
+                </xsl:element>
         </xsl:template>
+        <!-- DCMI type, UH specific add to DSpace registry. Omit if not required -->
+        <xsl:template match="*[local-name()='genre'][@type='documentType']">
+                <xsl:element name="dim:field">
+                <xsl:attribute name="mdschema">dc</xsl:attribute>
+                <xsl:attribute name="element">type</xsl:attribute>
+                <xsl:attribute name="qualifier">dcmitype</xsl:attribute>
+                <xsl:value-of select="normalize-space(.)"/>
+                </xsl:element>         
+        </xsl:template>
+        <!-- Peer review status, mapped to DSpace 1.5+ standard field dc.description.version
+                AND as URI to dc.type.uri (Non-standard field). See conversion tables below & adjust accordingly tiaalto 170610 -->
+        <xsl:template match="mods:note[@type='version identification']">
+                        <xsl:element name="dim:field">
+                                <xsl:attribute name="mdschema">dc</xsl:attribute>
+                                <xsl:attribute name="element">type</xsl:attribute>
+                                <xsl:attribute name="qualifier">uri</xsl:attribute>
+                                <xsl:call-template name="peerReviewURI">
+                                        <xsl:with-param name="statusURI" select="."></xsl:with-param>
+                                </xsl:call-template>
+                        </xsl:element>
+                <xsl:element name="dim:field">
+                        <xsl:attribute name="mdschema">dc</xsl:attribute>
+                        <xsl:attribute name="element">description</xsl:attribute>
+                        <xsl:attribute name="qualifier">version</xsl:attribute>
+                        <xsl:call-template name="peerReview">
+                                <xsl:with-param name="status" select="."></xsl:with-param>
+                                </xsl:call-template>
+                </xsl:element> 
+               
+                
+        </xsl:template>
+        
+        <!-- KOTA TYPES => SWAP /tiaalto 170610 -->
         <xsl:template name="KOTATypes">
                 <xsl:param name="kota"></xsl:param>
                 <xsl:choose>
@@ -475,20 +516,50 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                 </xsl:choose>
                 
         </xsl:template>
-        <!-- get the iso-639-2b into the shorter form, here for English, Finnish & Swedish -->
+        <!-- get the iso-639-2b into iso-639-1 form, here some common languages with fallback to english
+             Note that this is only being used for getting the "correct" value to DIM field lang attribute which
+             is currently of dubious utility / tiaalto 170610 -->
         <xsl:template name="langCode">
                 <xsl:param name="la"></xsl:param>
                 <xsl:choose>
                         <xsl:when test="$la='eng'">en</xsl:when>
                         <xsl:when test="$la='fin'">fi</xsl:when>
                         <xsl:when test="$la='swe'">sv</xsl:when>
+                        <xsl:when test="$la='fra' or $la='fre'">fr</xsl:when>
+                        <xsl:when test="$la='ger' or $la='deu'">de</xsl:when>
+                        <xsl:when test="$la='rus'">ru</xsl:when>
+                        <xsl:when test="$la='ita'">it</xsl:when>
+                        <xsl:when test="$la='lat'">la</xsl:when>
                         <xsl:otherwise>en</xsl:otherwise>
                 </xsl:choose>
                 
         </xsl:template>
         
+        <!-- tiaalto 170610 Templates for peer review status -->
+        <xsl:template name="peerReview">
+                <xsl:param name="status"></xsl:param>
+                <xsl:choose>
+                        <!-- the current PURE peer review status options are somewhat lacking and needs review, used here anyway -->
+                        <xsl:when test="$status='postprint'">Peer reviewed</xsl:when>
+                        <xsl:when test="$status='authorsversion'">Peer reviewed</xsl:when>
+                        <xsl:when test="$status='publishersversion'">Peer reviewed</xsl:when>
+                        <xsl:otherwise >Non Peer reviewed</xsl:otherwise>        
+                </xsl:choose>
+        </xsl:template>
         
-        <!--tiaalto 12.05.10: This template is for massaging the embargo date into a form understandable by DSpace.
+        <xsl:template name="peerReviewURI">
+                <xsl:param name="statusURI"></xsl:param>
+                <xsl:choose>
+                        <!-- the current PURE peer review status options are somewhat lacking and needs review, used here anyway -->
+                        <xsl:when test="$statusURI='postprint'">http://purl.org/eprint/status/PeerReviewed</xsl:when>
+                        <xsl:when test="$statusURI='authorsversion'">http://purl.org/eprint/status/PeerReviewed</xsl:when>
+                        <xsl:when test="$statusURI='publishersversion'">http://purl.org/eprint/status/PeerReviewed</xsl:when>
+                        <xsl:otherwise >http://purl.org/eprint/status/NonPeerReviewed</xsl:otherwise>        
+                </xsl:choose>
+        </xsl:template>
+        
+        <!--tiaalto 12.05.10: This template is for massaging the embargo date into a form understandable by DSpace 
+                Not necessarily needed if PURE handles the Embargo?
         source: http://geekswithblogs.net/workdog/archive/2007/02/08/105858.aspx-->
 
         <xsl:template name="FormatDate">
@@ -497,81 +568,41 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                 
                 <!-- new date format 2006-01-14T08:55:22 -->
                 
-                <xsl:variable name="mo">
-                        
-                        <xsl:value-of select="substring($DateTime,1,2)" />
-                        
+                <xsl:variable name="mo">                        
+                        <xsl:value-of select="substring($DateTime,1,2)" />                        
+                </xsl:variable>                
+                <xsl:variable name="day-temp">                        
+                        <xsl:value-of select="substring-after($DateTime,'-')" />                        
+                </xsl:variable>               
+                <xsl:variable name="day">                       
+                        <xsl:value-of select="substring-before($day-temp,'-')" />                      
+                </xsl:variable>              
+                <xsl:variable name="year-temp">                      
+                        <xsl:value-of select="substring-after($day-temp,'-')" />                      
+                </xsl:variable>              
+                <xsl:variable name="year">                      
+                        <xsl:value-of select="substring($year-temp,1,4)" />                      
+                </xsl:variable>              
+                <xsl:variable name="time">                       
+                        <xsl:value-of select="substring-after($year-temp,' ')" />                       
+                </xsl:variable>               
+                <xsl:variable name="hh">                       
+                        <xsl:value-of select="substring($time,1,2)" />                       
+                </xsl:variable>               
+                <xsl:variable name="mm">                       
+                        <xsl:value-of select="substring($time,4,2)" />                       
+                </xsl:variable>                
+                <xsl:variable name="ss">                       
+                        <xsl:value-of select="substring($time,7,2)" />                       
                 </xsl:variable>
-                
-                <xsl:variable name="day-temp">
-                        
-                        <xsl:value-of select="substring-after($DateTime,'-')" />
-                        
-                </xsl:variable>
-                
-                <xsl:variable name="day">
-                        
-                        <xsl:value-of select="substring-before($day-temp,'-')" />
-                        
-                </xsl:variable>
-                
-                <xsl:variable name="year-temp">
-                        
-                        <xsl:value-of select="substring-after($day-temp,'-')" />
-                        
-                </xsl:variable>
-                
-                <xsl:variable name="year">
-                        
-                        <xsl:value-of select="substring($year-temp,1,4)" />
-                        
-                </xsl:variable>
-                
-                <xsl:variable name="time">
-                        
-                        <xsl:value-of select="substring-after($year-temp,' ')" />
-                        
-                </xsl:variable>
-                
-                <xsl:variable name="hh">
-                        
-                        <xsl:value-of select="substring($time,1,2)" />
-                        
-                </xsl:variable>
-                
-                <xsl:variable name="mm">
-                        
-                        <xsl:value-of select="substring($time,4,2)" />
-                        
-                </xsl:variable>
-                
-                <xsl:variable name="ss">
-                        
-                        <xsl:value-of select="substring($time,7,2)" />
-                        
-                </xsl:variable>
-                
-                <xsl:value-of select="$year"/>
-                
+                <xsl:value-of select="$year"/>           
+                <xsl:value-of select="'-'"/>       
+                <xsl:if test="(string-length($day) &lt; 2)">                        
+                        <xsl:value-of select="0"/>                        
+                </xsl:if>                
+                <xsl:value-of select="$day"/>                
                 <xsl:value-of select="'-'"/>
-                
-                
-
-                               
-                
-                <xsl:if test="(string-length($day) &lt; 2)">
-                        
-                        <xsl:value-of select="0"/>
-                        
-                </xsl:if>
-                
-                <xsl:value-of select="$day"/>
-                
-                <xsl:value-of select="'-'"/>
-                
                 <xsl:value-of select="$mo"/>
-           
-                
         </xsl:template>
 
         
