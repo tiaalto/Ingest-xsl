@@ -155,24 +155,24 @@
 
 <!-- **** MODS  name ====> DC  contributor.{role/roleTerm} **** -->
         <xsl:template match="*[local-name()='name']">
-                
-                <xsl:element name="dim:field">
+                <!--Tiaalto 16/11/10: I'm commenting this out altogether because it creates an unwanted artefact-->
+                <!--<xsl:element name="dim:field">
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
                         <xsl:attribute name="element">contributor</xsl:attribute>
-                        <!-- Important assumption: That the string value used
+                        <!-\- Important assumption: That the string value used
                                 in the MODS role/roleTerm is indeed a DC Qualifier.
                                 e.g. contributor.illustrator
                                 (Using this assumption, rather than coding in
                                 a more controlled vocabulary via xsl:choose etc.)
-                                -->
+                                -\->
                         <xsl:attribute name="qualifier"><xsl:value-of select="*[local-name()='role']/*[local-name()='roleTerm']"/></xsl:attribute>
 
                         <xsl:value-of select="*[local-name()='namePart'][@type='family']"/><xsl:text>, </xsl:text><xsl:value-of select="*[local-name()='namePart'][@type='given']"/>
 
-                       <!-- This was a temporary solution, works only with the simplest surname, firstname case, (IOW, not well at all)-->
-                        <!--<xsl:value-of select="substring-after(*[local-name()='namePart'], ' ')"/>
-                        <xsl:text>, </xsl:text><xsl:value-of select="substring-before(*[local-name()='namePart'], ' ')"/>-->
-                </xsl:element>
+                       <!-\- This was a temporary solution, works only with the simplest surname, firstname case, (IOW, not well at all)-\->
+                        <!-\-<xsl:value-of select="substring-after(*[local-name()='namePart'], ' ')"/>
+                        <xsl:text>, </xsl:text><xsl:value-of select="substring-before(*[local-name()='namePart'], ' ')"/>-\->
+                </xsl:element>-->
                 <!--         **** MODS affiliation ====> DC  contributor (no qualifier), with addition of "Helsingin yliopisto" (UH specific, adjust accordingly) tiaalto 120210**** -->
                 <!--if there is an affiliation for a person and he/she is UH-->
                 <xsl:if test="*[local-name()='affiliation'][../@authority='local']">
@@ -430,9 +430,9 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                 </xsl:element>
         </xsl:template>
         
-        <!--Finnish KOTA Publication classification to purl.org/eprint/type/nn.
+        <!--Finnish KOTA Publication classification to info:eu-repo/semantics.
                 UH/Finland specific, comment out or change accordingly.
-                tiaalto 170510-->
+                tiaalto 161110-->
         <xsl:template match="*[local-name()='genre'][@type='publicationType']">
                 <xsl:element name="dim:field">
                 <xsl:attribute name="mdschema">dc</xsl:attribute>
@@ -488,31 +488,35 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
         <xsl:template name="KOTATypes">
                 <xsl:param name="kota"></xsl:param>
                 <xsl:choose>
-                        <xsl:when test="$kota='A1'">http://purl.org/eprint/type/JournalArticle</xsl:when>
-                        <xsl:when test="$kota='A2'">http://purl.org/eprint/type/JournalArticle</xsl:when>
-                        <xsl:when test="$kota='A3'">http://purl.org/eprint/type/BookItem</xsl:when>
-                        <xsl:when test="$kota='A4'">http://purl.org/eprint/type/ConferencePaper</xsl:when>
-                        <xsl:when test="$kota='B1'">http://purl.org/eprint/type/JournalArticle</xsl:when>
-                        <xsl:when test="$kota='B2'">http://purl.org/eprint/type/BookItem</xsl:when>
-                        <xsl:when test="$kota='B3'">http://purl.org/eprint/type/ConferencePaper</xsl:when>
-                        <xsl:when test="$kota='C1'">http://purl.org/eprint/type/Book</xsl:when>
-                        <xsl:when test="$kota='C2'">http://purl.org/eprint/type/Book</xsl:when>
-                        <xsl:when test="$kota='D1'">http://purl.org/eprint/type/JournalArticle</xsl:when>
-                        <xsl:when test="$kota='D2'">http://purl.org/eprint/type/BookItem</xsl:when>
-                        <xsl:when test="$kota='D3'">http://purl.org/eprint/type/ConferencePaper</xsl:when>
-                        <xsl:when test="$kota='D4'">http://purl.org/eprint/type/Report</xsl:when>
-                        <xsl:when test="$kota='D5'">http://purl.org/eprint/type/Book</xsl:when>
-                        <xsl:when test="$kota='E1'">http://purl.org/eprint/type/NewsItem</xsl:when>
-                        <xsl:when test="$kota='E2'">http://purl.org/eprint/type/Book</xsl:when>
-                        <xsl:when test="$kota='G1'">http://purl.org/eprint/type/Thesis</xsl:when>
-                        <xsl:when test="$kota='G2'">http://purl.org/eprint/type/Thesis</xsl:when>
-                        <xsl:when test="$kota='G3'">http://purl.org/eprint/type/Thesis</xsl:when>
-                        <xsl:when test="$kota='G4'">http://purl.org/eprint/type/Thesis</xsl:when>
-                        <xsl:when test="$kota='G5'">http://purl.org/eprint/type/Thesis</xsl:when>
-                        <xsl:when test="$kota='H1'">http://purl.org/eprint/type/Patent</xsl:when>
-                        <xsl:when test="$kota='I1'">http://purl.org/dc/dcmitype/MovingImage</xsl:when>
-                        <xsl:when test="$kota='I2'">http://purl.org/dc/dcmitype/Software</xsl:when>
-                        <xsl:otherwise>http://purl.org/eprint/type/ScholarlyText</xsl:otherwise>
+                        <xsl:when test="$kota='A1'">info:eu-repo/semantics/article</xsl:when>
+                        <xsl:when test="$kota='A2'">info:eu-repo/semantics/article</xsl:when>
+                        <xsl:when test="$kota='A3'">info:eu-repo/semantics/bookPart</xsl:when>
+                        <xsl:when test="$kota='A4'">info:eu-repo/semantics/conferencePaper</xsl:when>
+                        <xsl:when test="$kota='B1'">info:eu-repo/semantics/article</xsl:when>
+                        <xsl:when test="$kota='B2'">info:eu-repo/semantics/bookPart</xsl:when>
+                        <xsl:when test="$kota='B3'">info:eu-repo/semantics/conferencePaper</xsl:when>
+                        <xsl:when test="$kota='C1'">info:eu-repo/semantics/book</xsl:when>
+                        <xsl:when test="$kota='C2'">info:eu-repo/semantics/book</xsl:when>
+                        <xsl:when test="$kota='D1'">info:eu-repo/semantics/contributionToPeriodical</xsl:when>
+                        <xsl:when test="$kota='D2'">info:eu-repo/semantics/bookPart</xsl:when>
+                        <xsl:when test="$kota='D3'">info:eu-repo/semantics/conferencePaper</xsl:when>
+                        <xsl:when test="$kota='D4'">info:eu-repo/semantics/workingPaper</xsl:when>
+                        <xsl:when test="$kota='D5'">info:eu-repo/semantics/book</xsl:when>
+                        <xsl:when test="$kota='E1'">info:eu-repo/semantics/contributionToPeriodical</xsl:when>
+                        <xsl:when test="$kota='E2'">info:eu-repo/semantics/book</xsl:when>
+                        <xsl:when test="$kota='F1'">info:eu-repo/semantics/other</xsl:when>
+                        <xsl:when test="$kota='F2'">info:eu-repo/semantics/other</xsl:when>
+                        <xsl:when test="$kota='F3'">info:eu-repo/semantics/other</xsl:when>
+                        <xsl:when test="$kota='F4'">info:eu-repo/semantics/other</xsl:when>
+                        <xsl:when test="$kota='G1'">info:eu-repo/semantics/bachelorThesis</xsl:when>
+                        <xsl:when test="$kota='G2'">info:eu-repo/semantics/masterThesis</xsl:when>
+                        <xsl:when test="$kota='G3'">info:eu-repo/semantics/studentThesis</xsl:when>
+                        <xsl:when test="$kota='G4'">info:eu-repo/semantics/doctoralThesis</xsl:when>
+                        <xsl:when test="$kota='G5'">info:eu-repo/semantics/doctoralThesis</xsl:when>
+                        <xsl:when test="$kota='H1'">info:eu-repo/semantics/patent</xsl:when>
+                        <xsl:when test="$kota='I1'">info:eu-repo/semantics/other</xsl:when>
+                        <xsl:when test="$kota='I2'">info:eu-repo/semantics/other</xsl:when>
+                        <xsl:otherwise>info:eu-repo/semantics/other</xsl:otherwise>
                 </xsl:choose>
                 
         </xsl:template>
@@ -551,9 +555,9 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                 <xsl:param name="statusURI"></xsl:param>
                 <xsl:choose>
                         <!-- the current PURE peer review status options are somewhat lacking and needs review, used here anyway -->
-                        <xsl:when test="$statusURI='postprint'">http://purl.org/eprint/status/PeerReviewed</xsl:when>
-                        <xsl:when test="$statusURI='authorsversion'">http://purl.org/eprint/status/PeerReviewed</xsl:when>
-                        <xsl:when test="$statusURI='publishersversion'">http://purl.org/eprint/status/PeerReviewed</xsl:when>
+                        <xsl:when test="$statusURI='postprint'">info:eu-repo/semantics/submittedVersion</xsl:when>
+                        <xsl:when test="$statusURI='authorsversion'">info:eu-repo/semantics/acceptedVersion</xsl:when>
+                        <xsl:when test="$statusURI='publishersversion'">info:eu-repo/semantics/publishedVersion</xsl:when>
                         <xsl:otherwise >http://purl.org/eprint/status/NonPeerReviewed</xsl:otherwise>        
                 </xsl:choose>
         </xsl:template>
