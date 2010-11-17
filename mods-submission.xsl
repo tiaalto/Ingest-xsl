@@ -6,8 +6,7 @@
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 version="1.0">
 
-
-
+        
         
         
 
@@ -68,7 +67,11 @@
                         <xsl:template match="*[local-name()='mods']">...
                         ...Note that only the latter will work on XML data that does _not_ have
                         namespace prefixes (e.g. <mods><titleInfo>... vs. <mods:mods><mods:titleInfo>...)
+                        
                 -->
+
+                
+                
                 <xsl:element name="dim:dim">
 
         <xsl:comment>IMPORTANT NOTE:
@@ -100,6 +103,9 @@
         -->
                         <xsl:apply-templates/>
                 </xsl:element>
+                
+                
+                
         </xsl:template>
 <!-- **** MODS   titleInfo/title ====> DC title **** -->
         <xsl:template match="*[local-name()='titleInfo']/*[local-name()='title']">
@@ -156,31 +162,50 @@
 <!-- **** MODS  name ====> DC  contributor.{role/roleTerm} **** -->
         <xsl:template match="*[local-name()='name']">
                 <!--Tiaalto 16/11/10: I'm commenting this out altogether because it creates an unwanted artefact-->
-                <!--<xsl:element name="dim:field">
+                <xsl:variable name="nameQualifier" select="*[local-name()='role']/*[local-name()='roleTerm']" />
+                <xsl:if test="$nameQualifier!='pbl'">
+                <xsl:element name="dim:field">
+                        
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
                         <xsl:attribute name="element">contributor</xsl:attribute>
-                        <!-\- Important assumption: That the string value used
+                        <!-- Important assumption: That the string value used
                                 in the MODS role/roleTerm is indeed a DC Qualifier.
                                 e.g. contributor.illustrator
                                 (Using this assumption, rather than coding in
-                                a more controlled vocabulary via xsl:choose etc.)
-                                -\->
-                        <xsl:attribute name="qualifier"><xsl:value-of select="*[local-name()='role']/*[local-name()='roleTerm']"/></xsl:attribute>
+                                a more controlled vocabulary via xsl:choose etc.) -->
+                        <xsl:attribute name="qualifier"><xsl:value-of select="$nameQualifier"/></xsl:attribute>
+                        <xsl:value-of select="*[local-name()='namePart'][@type='family']"/>
+                        <!-- Apparently if the family part of name does not exist, we have a group author -->
+                        <xsl:if test="*[local-name()='namePart'][@type='family']!=''">
+                        <xsl:text>, </xsl:text>
+                        </xsl:if>       
+                        <xsl:value-of select="*[local-name()='namePart'][@type='given']"/>
 
-                        <xsl:value-of select="*[local-name()='namePart'][@type='family']"/><xsl:text>, </xsl:text><xsl:value-of select="*[local-name()='namePart'][@type='given']"/>
-
-                       <!-\- This was a temporary solution, works only with the simplest surname, firstname case, (IOW, not well at all)-\->
+                       <!-- This was a temporary solution, works only with the simplest surname, firstname case, (IOW, not well at all)-\->
                         <!-\-<xsl:value-of select="substring-after(*[local-name()='namePart'], ' ')"/>
-                        <xsl:text>, </xsl:text><xsl:value-of select="substring-before(*[local-name()='namePart'], ' ')"/>-\->
-                </xsl:element>-->
+                        <xsl:text>, </xsl:text><xsl:value-of select="substring-before(*[local-name()='namePart'], ' ')"/>-->
+                </xsl:element>
+                </xsl:if>
                 <!--         **** MODS affiliation ====> DC  contributor (no qualifier), with addition of "Helsingin yliopisto" (UH specific, adjust accordingly) tiaalto 120210**** -->
                 <!--if there is an affiliation for a person and he/she is UH-->
                 <xsl:if test="*[local-name()='affiliation'][../@authority='local']">
                 <xsl:element name="dim:field">
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
-                        <xsl:attribute name="element">contributor</xsl:attribute>           
+                        <xsl:attribute name="element">contributor</xsl:attribute>
+                        <xsl:choose>
+                                <xsl:when test="../*[local-name()='language']/*[local-name()='languageTerm']='eng'">
+                        <xsl:attribute name="lang">en</xsl:attribute>
+                        <xsl:text>University of Helsinki, </xsl:text><xsl:value-of select="*[local-name()='affiliation']"/>
+                        </xsl:when>
+                                <xsl:when test="../*[local-name()='language']/*[local-name()='languageTerm']='swe'">
+                                <xsl:attribute name="lang">sv</xsl:attribute>
+                                <xsl:text>Helsingfors universitet, </xsl:text><xsl:value-of select="*[local-name()='affiliation']"/>
+                        </xsl:when>
+                        <xsl:otherwise>
                         <xsl:attribute name="lang">fi</xsl:attribute>
-                        <xsl:text>Helsingin yliopisto, </xsl:text><xsl:value-of select="*[local-name()='affiliation']"/>               
+                        <xsl:text>Helsingin yliopisto, </xsl:text><xsl:value-of select="*[local-name()='affiliation']"/>
+                          </xsl:otherwise>
+                        </xsl:choose>
                 </xsl:element>
                 </xsl:if>
                 
@@ -243,7 +268,6 @@
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
                         <xsl:attribute name="element">format</xsl:attribute>                    
                         <xsl:attribute name="qualifier">extent</xsl:attribute>
-                        <xsl:attribute name="lang">en</xsl:attribute>
                         <xsl:value-of select="."/>
                 </xsl:element>
         </xsl:template>
@@ -309,6 +333,7 @@
                 MODS [@type='____'] {/titleInfo/title} ====> DC  relation.{ series | host | other...}
         -->
         <xsl:template match="*[local-name()='relatedItem']">
+                
                 <xsl:choose>
                         <!-- 1)  DC  identifier.citation  -->
                         <xsl:when test="./@type='host'  and   *[local-name()='part']/*[local-name()='text']">
@@ -351,7 +376,7 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                                 </xsl:element>
                         </xsl:otherwise>
                 </xsl:choose>
-             
+                <xsl:if test="./@type='host' and *[local-name()='identifier']">
                        <xsl:element name="dim:field">
                         <xsl:attribute name="mdschema">dc</xsl:attribute>
                         <xsl:attribute name="element">identifier</xsl:attribute>
@@ -362,8 +387,10 @@ http://cwspace.mit.edu/docs/WorkActivity/Metadata/Crosswalks/MODSmapping2MB.html
                                         <xsl:otherwise>other</xsl:otherwise>
                                 </xsl:choose>
                         </xsl:attribute>
-                        <xsl:value-of select="normalize-space(*[local-name()='identifier'])"/>               
-                </xsl:element>
+                        <xsl:value-of select="normalize-space(*[local-name()='identifier'])"/>
+                             
+                       </xsl:element>
+                        </xsl:if>
         </xsl:template>
         
 <!-- Copyright statement- mods:accessCondition => dc.rights / tiaalto 180510 -->
